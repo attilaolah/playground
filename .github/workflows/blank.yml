@@ -28,6 +28,12 @@ jobs:
         with:
           path: playground
 
+      - name: Breakpoint if tests failed
+        uses: namespacelabs/breakpoint-action@v0
+        with:
+          duration: 2h
+          authorized-users: attilaolah
+
       # Runs a single command using the runners shell
       - name: Run a one-line script
         run: echo Hello, world!
