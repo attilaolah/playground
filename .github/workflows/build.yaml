@@ -1,0 +1,36 @@
+name: build
+
+on:
+  push:
+    branches:
+    - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on:
+    - nscloud-ubuntu-22.04-amd64-2x4-with-cache
+    - nscloud-git-mirror-5gb
+    steps:
+    - name: Checkout
+      uses: namespacelabs/nscloud-checkout-action@v2
+
+    - name: Checkout Dependency [bldr]
+      uses: namespacelabs/nscloud-checkout-action@v2
+      with:
+        repository: siderolabs/bldr
+        refs: tags/v0.3.0
+        path: bldr
+
+    - name: Checkout Dependency [pkgs]
+      uses: namespacelabs/nscloud-checkout-action@v2
+      with:
+        repository: siderolabs/pkgs
+        refs: tags/v1.8.0-alpha.0
+        path: pkgs
+
+    - name: DEBUG
+      uses: namespacelabs/breakpoint-action@v0
+      with:
+        duration: 4h
+        authorized-users: attilaolah

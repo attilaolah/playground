@@ -1,0 +1,28 @@
+diff --git a/internal/pkg/environment/platform.go b/internal/pkg/environment/platform.go
+index 2721a7d..2ae0498 100644
+--- a/internal/pkg/environment/platform.go
++++ b/internal/pkg/environment/platform.go
+@@ -63,6 +63,15 @@ func (p *Platform) Type() string {
+ 
+ // Platform definitions.
+ var (
++	Linux386 = Platform{
++		ID:           "linux/386",
++		Arch:         "x86",
++		Target:       "x86-talos-linux-musl",
++		Build:        "x86-linux-musl",
++		Host:         "x86-linux-musl",
++		LLBPlatform:  llb.Platform(specs.Platform{OS: "linux", Architecture: "386"}),
++		PlatformSpec: platforms.MustParse("linux/386"),
++	}
+ 	LinuxAmd64 = Platform{
+ 		ID:           "linux/amd64",
+ 		Arch:         "x86_64",
+@@ -99,6 +108,7 @@ var Platforms = map[string]Platform{}
+ 
+ func init() {
+ 	for _, platform := range []Platform{
++		Linux386,
+ 		LinuxAmd64,
+ 		LinuxArm64,
+ 		LinuxArmv7,
