@@ -29,8 +29,22 @@ jobs:
         refs: tags/v1.8.0-alpha.0
         path: pkgs
 
+    - name: Git config
+      run: |
+        git config --global user.name ci
+        git config --global user.email ci@dorn.haus
+
+    - name: Build [bldr]
+      run: |
+        cd "${GITHUB_WORKSPACE}/bldr"
+        patch -p1 "${GITHUB_WORKSPACE}/patches/bldr.patch"
+        git add .
+        git commit -m patch
+        make REGISTRY="${NSC_CONTAINER_REGISTRY}" PUSH=true image-bldr
+
     - name: DEBUG
       uses: namespacelabs/breakpoint-action@v0
+      if: failure()
       with:
         duration: 4h
         authorized-users: attilaolah
