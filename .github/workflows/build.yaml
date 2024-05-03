@@ -19,14 +19,14 @@ jobs:
       uses: namespacelabs/nscloud-checkout-action@v2
       with:
         repository: siderolabs/bldr
-        refs: tags/v0.3.0
+        ref: tags/v0.3.0
         path: bldr
 
     - name: Checkout Dependency [pkgs]
       uses: namespacelabs/nscloud-checkout-action@v2
       with:
         repository: siderolabs/pkgs
-        refs: tags/v1.8.0-alpha.0
+        ref: tags/v1.8.0-alpha.0
         path: pkgs
 
     - name: Git config
@@ -37,7 +37,7 @@ jobs:
     - name: Build [bldr]
       run: |
         cd "${GITHUB_WORKSPACE}/bldr"
-        patch -p1 "${GITHUB_WORKSPACE}/patches/bldr.patch"
+        patch -p1 < "${GITHUB_WORKSPACE}/patches/bldr.patch"
         git add .
         git commit -m patch
         make REGISTRY="${NSC_CONTAINER_REGISTRY}" PUSH=true image-bldr
