@@ -22,6 +22,13 @@ jobs:
         ref: tags/v0.3.0
         path: bldr
 
+    - name: Checkout Dependency [tools]
+      uses: namespacelabs/nscloud-checkout-action@v2
+      with:
+        repository: siderolabs/tools
+        ref: tags/v1.8.0-alpha.0
+        path: tools
+
     - name: Checkout Dependency [pkgs]
       uses: namespacelabs/nscloud-checkout-action@v2
       with:
@@ -42,11 +49,25 @@ jobs:
         git add .
         git commit -m patch
 
-        # Build the bldr image:
-        make REGISTRY="${NSC_CONTAINER_REGISTRY}" PUSH=true image-bldr
+        make \
+          REGISTRY="${NSC_CONTAINER_REGISTRY}" \
+          PLATFORM=linux/amd64 \
+          PUSH=true \
+          image-bldr
 
-        # Save the output image tag:
         echo "tag=$(git describe --tag --always --dirty)" >> $GITHUB_OUTPUT
+
+    - name: Build [tools]
+      run: |
+        cd "${GITHUB_WORKSPACE}/tools"
+
+        make \
+          REGISTRY="${NSC_CONTAINER_REGISTRY}" \
+          BLDR_RELEASE="${{ steps.bldr.outputs.tag }}" \
+          BLDR_IMAGE="${NSC_CONTAINER_REGISTRY}/siderolabs/bldr:${{ steps.bldr.outputs.tag }}" \
+          PLATFORM=linux/amd64 \
+          PUSH=true \
+          tools
 
     - name: Build [pkgs]
       run: |
