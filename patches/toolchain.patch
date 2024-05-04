@@ -10,3 +10,24 @@ index f526f63..04d1053 100644
          --disable-multilib \
          --disable-nls \
          --enable-shared \
+diff --git a/toolchain/pkg.yaml b/toolchain/pkg.yaml
+index 4a85138..69a3a33 100644
+--- a/toolchain/pkg.yaml
++++ b/toolchain/pkg.yaml
+@@ -13,6 +13,16 @@ steps:
+         cc dummy.c
+         readelf -l a.out | grep ": ${TOOLCHAIN}"
+         ./a.out
++      - |
++        cat << EOF > 386.c
++        #include <stdint.h>
++        #include <inttypes.h>
++        int main() {
++            static_assert(INT32_MAX != INT64_MAX, "INT32_MAX == INT64_MAX");
++            return 0;
++        }
++        EOF
++        gcc -std=c11 -m32 -o 386 386.c
+ finalize:
+   - from: "{{ .TOOLCHAIN }}"
+     to: "{{ .TOOLCHAIN }}"
