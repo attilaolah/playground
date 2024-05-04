@@ -12,10 +12,14 @@ index 7fa5f2b..ab54fb9 100644
          --disable-libstdcxx-threads \
          --disable-libstdcxx-pch
 diff --git a/gcc/pkg.yaml b/gcc/pkg.yaml
-index f526f63..04d1053 100644
+index f526f63..6d7f8a1 100644
 --- a/gcc/pkg.yaml
 +++ b/gcc/pkg.yaml
-@@ -63,6 +63,7 @@ steps:
+@@ -60,9 +60,11 @@ steps:
+         ../configure \
+         --build=${BUILD} \
+         --host=${HOST} \
++        --target=i386-pc-linux \
          --prefix=${TOOLCHAIN} \
          --with-local-prefix=${TOOLCHAIN} \
          --with-native-system-header-dir=${TOOLCHAIN}/include \
