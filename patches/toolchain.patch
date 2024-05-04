@@ -1,3 +1,30 @@
+diff --git a/bootstrap/gcc/pkg.yaml b/bootstrap/gcc/pkg.yaml
+index db3f027..fc30b5b 100644
+--- a/bootstrap/gcc/pkg.yaml
++++ b/bootstrap/gcc/pkg.yaml
+@@ -59,7 +59,8 @@ steps:
+         --disable-bootstrap \
+         --disable-nls \
+         --disable-shared \
+-        --disable-multilib \
++        --enable-multiarch \
++        --enable-multilib \
+         --disable-threads \
+         --disable-libatomic \
+         --disable-libgomp \
+diff --git a/bootstrap/libstdcxx/pkg.yaml b/bootstrap/libstdcxx/pkg.yaml
+index 7fa5f2b..ab54fb9 100644
+--- a/bootstrap/libstdcxx/pkg.yaml
++++ b/bootstrap/libstdcxx/pkg.yaml
+@@ -22,7 +22,7 @@ steps:
+         --host=${HOST} \
+         --prefix={{ .BOOTSTRAP }} \
+         --with-gxx-include-dir={{ .BOOTSTRAP }}/include/c++/{{ .gcc_version }} \
+-        --disable-multilib \
++        --enable-multilib \
+         --disable-nls \
+         --disable-libstdcxx-threads \
+         --disable-libstdcxx-pch
 diff --git a/gcc/pkg.yaml b/gcc/pkg.yaml
 index f526f63..04d1053 100644
 --- a/gcc/pkg.yaml
