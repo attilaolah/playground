@@ -53,8 +53,8 @@ jobs:
         cd "${GITHUB_WORKSPACE}/pkgs"
         docker buildx use default
         sed --in-place \
-          "s|ghcr.io|${NSC_CONTAINER_REGISTRY}|g" \
-          "s|bldr:.*|bldr:${{ steps.bldr.outputs.tag }}|g" \
+          --expression="s|ghcr.io|${NSC_CONTAINER_REGISTRY}|g" \
+          --expression="s|bldr:.*|bldr:${{ steps.bldr.outputs.tag }}|g" \
           Pkgfile
         make \
           REGISTRY="${NSC_CONTAINER_REGISTRY}" \
