@@ -12,21 +12,19 @@ index 7fa5f2b..ab54fb9 100644
          --disable-libstdcxx-threads \
          --disable-libstdcxx-pch
 diff --git a/gcc/pkg.yaml b/gcc/pkg.yaml
-index f526f63..6d7f8a1 100644
+index f526f63..321f888 100644
 --- a/gcc/pkg.yaml
 +++ b/gcc/pkg.yaml
-@@ -60,9 +60,11 @@ steps:
+@@ -59,7 +59,8 @@ steps:
+ 
          ../configure \
          --build=${BUILD} \
-         --host=${HOST} \
-+        --target=i386-pc-linux \
+-        --host=${HOST} \
++        --host=i386-pc-linux \
++        --target=${HOST} \
          --prefix=${TOOLCHAIN} \
          --with-local-prefix=${TOOLCHAIN} \
          --with-native-system-header-dir=${TOOLCHAIN}/include \
-+        --enable-multiarch \
-         --disable-multilib \
-         --disable-nls \
-         --enable-shared \
 diff --git a/toolchain/pkg.yaml b/toolchain/pkg.yaml
 index 4a85138..69a3a33 100644
 --- a/toolchain/pkg.yaml
