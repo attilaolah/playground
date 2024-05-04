@@ -10,6 +10,7 @@ jobs:
   build:
     runs-on:
     - nscloud-ubuntu-22.04-amd64-2x4-with-cache
+    - nscloud-cache-tag-playground
     - nscloud-git-mirror-5gb
     steps:
     - name: Checkout
