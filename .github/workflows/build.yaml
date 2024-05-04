@@ -14,10 +14,10 @@ jobs:
     - nscloud-git-mirror-5gb
     steps:
     # Prepare
-    - name: Checkout
+    - name: "[0] checkout"
       uses: namespacelabs/nscloud-checkout-action@v2
 
-    - name: Prepare build env
+    - name: "[0] prepare build env"
       id: env
       run: |
         git config --global user.name ci
