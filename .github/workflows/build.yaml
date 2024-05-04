@@ -13,55 +13,68 @@ jobs:
     - nscloud-cache-size-20gb
     - nscloud-git-mirror-5gb
     steps:
+    - name: Git config
+      run: |
+        git config --global user.name ci
+        git config --global user.email ci@dorn.haus
+
     - name: Checkout
       uses: namespacelabs/nscloud-checkout-action@v2
 
-    - name: Checkout Dependency [bldr]
+    - name: Checkout [bldr]
       uses: namespacelabs/nscloud-checkout-action@v2
       with:
         repository: siderolabs/bldr
         ref: tags/v0.3.0
         path: bldr
 
-    - name: Checkout Dependency [tools]
+    - name: Checkout [tools]
       uses: namespacelabs/nscloud-checkout-action@v2
       with:
         repository: siderolabs/tools
         ref: tags/v1.8.0-alpha.0
         path: tools
 
-    - name: Checkout Dependency [pkgs]
+    - name: Checkout [pkgs]
       uses: namespacelabs/nscloud-checkout-action@v2
       with:
         repository: siderolabs/pkgs
         ref: tags/v1.8.0-alpha.0
         path: pkgs
 
-    - name: Git config
-      run: |
-        git config --global user.name ci
-        git config --global user.email ci@dorn.haus
-
-    - name: Build [bldr]
+    - name: Prepare [bldr]
       id: bldr
       run: |
         cd "${GITHUB_WORKSPACE}/bldr"
         patch -p1 < "${GITHUB_WORKSPACE}/patches/bldr.patch"
         git add .
         git commit -m patch
+        echo "tag=$(git describe --tag --always --dirty)" >> $GITHUB_OUTPUT
 
+    - name: Prepare [pkgs]
+      id: pkgs
+      run: |
+        cd "${GITHUB_WORKSPACE}/pkgs"
+        sed --in-place \
+          --expression="s|ghcr.io|${NSC_CONTAINER_REGISTRY}|g" \
+          --expression="s|bldr:.*|bldr:${{ steps.bldr.outputs.tag }}|g" \
+          Pkgfile
+        grep --extended-regexp '^TARGETS\s[+]?=\s' Makefile \
+          | awk '{print $3}' \
+          >> $GITHUB_OUTPUT
+
+    - name: Build [bldr]
+      run: |
+        cd "${GITHUB_WORKSPACE}/bldr"
         make \
           REGISTRY="${NSC_CONTAINER_REGISTRY}" \
           PLATFORM=linux/amd64 \
           PUSH=true \
           image-bldr
 
-        echo "tag=$(git describe --tag --always --dirty)" >> $GITHUB_OUTPUT
-
     - name: Build [tools]
       run: |
         cd "${GITHUB_WORKSPACE}/tools"
-
         make \
           REGISTRY="${NSC_CONTAINER_REGISTRY}" \
           BLDR_RELEASE="${{ steps.bldr.outputs.tag }}" \
@@ -73,10 +86,6 @@ jobs:
     - name: Build [pkgs]
       run: |
         cd "${GITHUB_WORKSPACE}/pkgs"
-        sed --in-place \
-          --expression="s|ghcr.io|${NSC_CONTAINER_REGISTRY}|g" \
-          --expression="s|bldr:.*|bldr:${{ steps.bldr.outputs.tag }}|g" \
-          Pkgfile
         make \
           REGISTRY="${NSC_CONTAINER_REGISTRY}" \
           BLDR_RELEASE="${{ steps.bldr.outputs.tag }}" \
@@ -88,5 +97,5 @@ jobs:
       uses: namespacelabs/breakpoint-action@v0
       if: failure()
       with:
-        duration: 4h
+        duration: 5m
         authorized-users: attilaolah
