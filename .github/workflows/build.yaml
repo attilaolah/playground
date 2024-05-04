@@ -94,9 +94,9 @@ jobs:
           BLDR_IMAGE="${NSC_CONTAINER_REGISTRY}/siderolabs/bldr:${{ steps.bldr.outputs.tag }}" \
           PLATFORM=linux/386 \
           ca-certificates \
-          musl kernel-prepare linux-firmware \
-          base kernel-build \
-          util-linux raspberrypi-firmware liblzma libseccomp sd-boot nvidia-open-gpu-kernel-modules-pkg zfs-pkg drdb-pkg gasket-driver-pkg kernel mellanox-ofed-pkg nonfree-kmod-nvidia-pkg \
+          musl linux-firmware \
+          base \
+          util-linux raspberrypi-firmware liblzma libseccomp sd-boot \
           liburcu syslinux eudev libaio grub ipxe runc containerd \
           lvm2 libjson-c libpopt flannel-cni kmod \
           cni fhs dosfstools iptables
