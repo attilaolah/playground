@@ -35,18 +35,32 @@ jobs:
         git config --global user.email ci@dorn.haus
 
     - name: Build [bldr]
+      id: bldr
       run: |
         cd "${GITHUB_WORKSPACE}/bldr"
         patch -p1 < "${GITHUB_WORKSPACE}/patches/bldr.patch"
         git add .
         git commit -m patch
-        git describe --tag --always --dirty > "${GITHUB_WORKSPACE}/bldr.tag"
+
+        # Build the bldr image:
         make REGISTRY="${NSC_CONTAINER_REGISTRY}" PUSH=true image-bldr
+
+        # Save the output image tag:
+        echo "tag=$(git describe --tag --always --dirty)" >> $GITHUB_OUTPUT
 
     - name: Build [pkgs]
       run: |
         cd "${GITHUB_WORKSPACE}/pkgs"
-        make PLATFORM=linux/386 grub
+        docker buildx use default
+        sed --in-place \
+          "s|ghcr.io/siderolabs/bldr:.*|ghcr.io/siderolabs/bldr:$(cat "${GITHUB_WORKSPACE}/bldr.tag")|g"} \
+          Pkgfile
+        make \
+          REGISTRY="${NSC_CONTAINER_REGISTRY}" \
+          BLDR_RELEASE="${{ steps.bldr.outputs.tag }}" \
+          BLDR_IMAGE="${NSC_CONTAINER_REGISTRY}/siderolabs/bldr:${{ steps.bldr.outputs.tag }}" \
+          PLATFORM=linux/386 \
+          grub
 
     - name: DEBUG
       uses: namespacelabs/breakpoint-action@v0
