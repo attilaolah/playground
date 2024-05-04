@@ -72,7 +72,6 @@ jobs:
     - name: Build [pkgs]
       run: |
         cd "${GITHUB_WORKSPACE}/pkgs"
-        docker buildx use default
         sed --in-place \
           --expression="s|ghcr.io|${NSC_CONTAINER_REGISTRY}|g" \
           --expression="s|bldr:.*|bldr:${{ steps.bldr.outputs.tag }}|g" \
