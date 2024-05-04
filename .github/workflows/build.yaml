@@ -66,9 +66,7 @@ jobs:
       id: toolchain
       run: |
         cd "${{ steps.env.outputs.workspace }}/toolchain"
-        sed --in-place \
-          --expression="s/disable-multilib/enable-multilib/g" \
-          **/pkg.yaml
+        patch -p1 < "${{ steps.env.outputs.workspace }}/patches/toolchain.patch"
         sed --in-place \
           --expression="s|ghcr.io|${{ steps.env.outputs.registry }}|g" \
           --expression="s|bldr:.*|bldr:${{ steps.bldr.outputs.tag }}|g" \

@@ -1,0 +1,12 @@
+diff --git a/gcc/pkg.yaml b/gcc/pkg.yaml
+index f526f63..04d1053 100644
+--- a/gcc/pkg.yaml
++++ b/gcc/pkg.yaml
+@@ -63,6 +63,7 @@ steps:
+         --prefix=${TOOLCHAIN} \
+         --with-local-prefix=${TOOLCHAIN} \
+         --with-native-system-header-dir=${TOOLCHAIN}/include \
++        --enable-multiarch \
+         --disable-multilib \
+         --disable-nls \
+         --enable-shared \
