@@ -18,6 +18,7 @@ jobs:
         git config --global user.name ci
         git config --global user.email ci@dorn.haus
 
+    # Checkout
     - name: Checkout
       uses: namespacelabs/nscloud-checkout-action@v2
 
@@ -27,6 +28,13 @@ jobs:
         repository: siderolabs/bldr
         ref: tags/v0.3.0
         path: bldr
+
+    - name: Checkout [toolchain]
+      uses: namespacelabs/nscloud-checkout-action@v2
+      with:
+        repository: siderolabs/toolchain
+        ref: tags/v0.11.0
+        path: toolchain
 
     - name: Checkout [tools]
       uses: namespacelabs/nscloud-checkout-action@v2
@@ -42,6 +50,7 @@ jobs:
         ref: tags/v1.8.0-alpha.0
         path: pkgs
 
+    # Builder
     - name: Prepare [bldr]
       id: bldr
       run: |
@@ -51,20 +60,6 @@ jobs:
         git commit -m patch
         echo "tag=$(git describe --tag --always --dirty)" >> $GITHUB_OUTPUT
 
-    - name: Prepare [pkgs]
-      id: pkgs
-      run: |
-        cd "${GITHUB_WORKSPACE}/pkgs"
-        sed --in-place \
-          --expression="s|ghcr.io|${NSC_CONTAINER_REGISTRY}|g" \
-          --expression="s|bldr:.*|bldr:${{ steps.bldr.outputs.tag }}|g" \
-          Pkgfile
-        grep --extended-regexp '^TARGETS\s[+]?=\s' Makefile \
-          | awk '{print $3}' \
-          | tr '\n' ' ' \
-          | sed 's/^/targets=/g' \
-          >> $GITHUB_OUTPUT
-
     - name: Build [bldr]
       run: |
         cd "${GITHUB_WORKSPACE}/bldr"
@@ -73,6 +68,47 @@ jobs:
           PLATFORM=linux/amd64 \
           PUSH=true \
           image-bldr
+
+    # Toolchain
+    - name: Prepare [toolchain]
+      id: toolchain
+      run: |
+        cd "${GITHUB_WORKSPACE}/toolchain"
+        sed --in-place \
+          --expression="s/disable-multilib/enable-multilib/g" \
+          **/pkg.yaml
+        sed --in-place \
+          --expression="s|ghcr.io|${NSC_CONTAINER_REGISTRY}|g" \
+          --expression="s|bldr:.*|bldr:${{ steps.bldr.outputs.tag }}|g" \
+          Pkgfile
+        git add .
+        git commit -m patch
+        echo "tag=$(git describe --tag --always --dirty)" >> $GITHUB_OUTPUT
+
+    - name: Build [toolchain]
+      run: |
+        cd "${GITHUB_WORKSPACE}/toolchain"
+        make \
+          REGISTRY="${NSC_CONTAINER_REGISTRY}" \
+          BLDR_RELEASE="${{ steps.bldr.outputs.tag }}" \
+          BLDR_IMAGE="${NSC_CONTAINER_REGISTRY}/siderolabs/bldr:${{ steps.bldr.outputs.tag }}" \
+          PLATFORM=linux/amd64 \
+          PUSH=true \
+          toolchain
+
+    # Tools
+    - name: Prepare [tools]
+      id: tools
+      run: |
+        cd "${GITHUB_WORKSPACE}/tools"
+        sed --in-place \
+          --expression="s|ghcr.io|${NSC_CONTAINER_REGISTRY}|g" \
+          --expression="s|bldr:.*|bldr:${{ steps.bldr.outputs.tag }}|g" \
+          --expression="s|toolchain:.*|toolchain:${{ steps.toolchain.outputs.tag }}|g" \
+          Pkgfile
+        git add .
+        git commit -m patch
+        echo "tag=$(git describe --tag --always --dirty)" >> $GITHUB_OUTPUT
 
     - name: Build [tools]
       run: |
@@ -85,23 +121,19 @@ jobs:
           PUSH=true \
           tools
 
-    - name: Build [pkgs]
+    # Packages
+    - name: Prepare [pkgs]
       run: |
         cd "${GITHUB_WORKSPACE}/pkgs"
-        make \
-          REGISTRY="${NSC_CONTAINER_REGISTRY}" \
-          BLDR_RELEASE="${{ steps.bldr.outputs.tag }}" \
-          BLDR_IMAGE="${NSC_CONTAINER_REGISTRY}/siderolabs/bldr:${{ steps.bldr.outputs.tag }}" \
-          PLATFORM=linux/386 \
-          ca-certificates \
-          musl linux-firmware \
-          base \
-          util-linux raspberrypi-firmware liblzma libseccomp sd-boot \
-          liburcu syslinux eudev libaio grub ipxe runc containerd \
-          lvm2 libjson-c libpopt flannel-cni kmod \
-          cni fhs dosfstools iptables
+        sed --in-place \
+          --expression="s|ghcr.io|${NSC_CONTAINER_REGISTRY}|g" \
+          --expression="s|bldr:.*|bldr:${{ steps.bldr.outputs.tag }}|g" \
+          --expression="s|tools:.*|toolchain:${{ steps.tools.outputs.tag }}|g" \
+          Pkgfile
+        git add .
+        git commit -m patch
 
-    - name: Build [openssl debug]
+    - name: Build [pkgs] # debug: only building openssl for now
       run: |
         cd "${GITHUB_WORKSPACE}/pkgs"
         make \
