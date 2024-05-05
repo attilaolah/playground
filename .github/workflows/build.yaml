@@ -6,6 +6,10 @@ on:
     - main
   workflow_dispatch:
 
+defaults:
+  run:
+    working-directory: ./steps
+
 jobs:
   build:
     runs-on:
@@ -13,139 +17,143 @@ jobs:
     - nscloud-cache-size-20gb
     - nscloud-git-mirror-5gb
     steps:
-    # Prepare
-    - name: "[0] checkout"
+
+    # Stage 0
+    - name: 0. checkout
       uses: namespacelabs/nscloud-checkout-action@v2
 
-    - name: "[0] prepare build env"
-      id: env
-      run: |
-        git config --global user.name ci
-        git config --global user.email ci@dorn.haus
-        echo "workspace=${GITHUB_WORKSPACE}" >> "${GITHUB_OUTPUT}"
-        echo "registry=${NSC_CONTAINER_REGISTRY}" >> "${GITHUB_OUTPUT}"
-        echo "builder_version=0.3.0" >> "${GITHUB_OUTPUT}"
-        echo "toolchain_version=0.11.0" >> "${GITHUB_OUTPUT}"
-        echo "talos_version=1.8.0-alpha.0" >> "${GITHUB_OUTPUT}"
-
-    # [1] bldr
-    - name: "[1] bldr: checkout"
-      uses: namespacelabs/nscloud-checkout-action@v2
+    - name: 0. install nix
+      uses: cachix/install-nix-action@v25
       with:
-        repository: siderolabs/bldr
-        ref: tags/v${{ steps.env.outputs.builder_version }}
-        path: bldr
+        github_access_token: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: "[1] bldr: prepare"
-      id: bldr
-      run: |
-        cd "${{ steps.env.outputs.workspace }}/bldr"
-        patch -p1 < "${{ steps.env.outputs.workspace }}/patches/bldr.patch"
-        git add .
-        git commit -m patch
-        echo "tag=$(git describe --tag --always --dirty)" >> $GITHUB_OUTPUT
+    - name: 0. build flake
+      run: nix build
 
-    - name: "[1] bldr: build"
-      run: |
-        cd "${{ steps.env.outputs.workspace }}/bldr"
-        make \
-          REGISTRY="${{ steps.env.outputs.registry }}" \
-          PLATFORM=linux/amd64 \
-          PUSH=true \
-          image-bldr
+    - name: 0. check flake
+      run: nix flake check --all-systems
 
-    # [2] toolchain
-    - name: "[2] toolchain: checkout"
-      uses: namespacelabs/nscloud-checkout-action@v2
-      with:
-        repository: siderolabs/toolchain
-        ref: tags/v${{ steps.env.outputs.toolchain_version }}
-        path: toolchain
+    - name: 0. prepare build env
+      run: nix run .#prepare
 
-    - name: "[2] toolchain: prepare"
-      id: toolchain
-      run: |
-        cd "${{ steps.env.outputs.workspace }}/toolchain"
-        patch -p1 < "${{ steps.env.outputs.workspace }}/patches/toolchain.patch"
-        sed --in-place \
-          --expression="s|ghcr.io|${{ steps.env.outputs.registry }}|g" \
-          --expression="s|bldr:.*|bldr:${{ steps.bldr.outputs.tag }}|g" \
-          Pkgfile
-        git add .
-        git commit -m patch
-        echo "tag=$(git describe --tag --always --dirty)" >> $GITHUB_OUTPUT
-
-    - name: "[2] toolchain: build"
-      run: |
-        cd "${{ steps.env.outputs.workspace }}/toolchain"
-        make \
-          REGISTRY="${{ steps.env.outputs.registry }}" \
-          BLDR_RELEASE="${{ steps.bldr.outputs.tag }}" \
-          BLDR_IMAGE="${{ steps.env.outputs.registry }}/siderolabs/bldr:${{ steps.bldr.outputs.tag }}" \
-          PLATFORM=linux/amd64 \
-          PUSH=true \
-          toolchain
-
-    # [3] tools
-    - name: "[3] tools: checkout"
-      uses: namespacelabs/nscloud-checkout-action@v2
-      with:
-        repository: siderolabs/tools
-        ref: tags/v${{ steps.env.outputs.talos_version }}
-        path: tools
-
-    - name: "[3] tools: prepare"
-      id: tools
-      run: |
-        cd "${{ steps.env.outputs.workspace }}/tools"
-        sed --in-place \
-          --expression="s|ghcr.io|${{ steps.env.outputs.registry }}|g" \
-          --expression="s|bldr:.*|bldr:${{ steps.bldr.outputs.tag }}|g" \
-          --expression="s|toolchain:.*|toolchain:${{ steps.toolchain.outputs.tag }}|g" \
-          Pkgfile
-        git add .
-        git commit -m patch
-        echo "tag=$(git describe --tag --always --dirty)" >> $GITHUB_OUTPUT
-
-    - name: "[3] tools: build"
-      run: |
-        cd "${{ steps.env.outputs.workspace }}/tools"
-        make \
-          REGISTRY="${{ steps.env.outputs.registry }}" \
-          BLDR_RELEASE="${{ steps.bldr.outputs.tag }}" \
-          BLDR_IMAGE="${{ steps.env.outputs.registry }}/siderolabs/bldr:${{ steps.bldr.outputs.tag }}" \
-          PLATFORM=linux/amd64 \
-          PUSH=true \
-          tools
-
-    # [4] pkgs
-    - name: "[4] pkgs: checkout"
-      uses: namespacelabs/nscloud-checkout-action@v2
-      with:
-        repository: siderolabs/pkgs
-        ref: tags/v${{ steps.env.outputs.talos_version }}
-        path: pkgs
-
-    - name: "[4] pkgs: prepare"
-      run: |
-        cd "${{ steps.env.outputs.workspace }}/pkgs"
-        sed --in-place \
-          --expression="s|ghcr.io|${{ steps.env.outputs.registry }}|g" \
-          --expression="s|bldr:.*|bldr:${{ steps.bldr.outputs.tag }}|g" \
-          --expression="s|tools:.*|toolchain:${{ steps.tools.outputs.tag }}|g" \
-          Pkgfile
-        git add .
-        git commit -m patch
-
-    - name: "[4] pkgs: build" # debug: only openssl for now
-      run: |
-        cd "${{ steps.env.outputs.workspace }}/pkgs"
-        make \
-          REGISTRY="${{ steps.env.outputs.registry }}" \
-          BLDR_RELEASE="${{ steps.bldr.outputs.tag }}" \
-          BLDR_IMAGE="${{ steps.env.outputs.registry }}/siderolabs/bldr:${{ steps.bldr.outputs.tag }}" \
-          PLATFORM=linux/386 \
-          openssl
+    # # [1] bldr
+    # - name: "[1] bldr: checkout"
+    #   uses: namespacelabs/nscloud-checkout-action@v2
+    #   with:
+    #     repository: siderolabs/bldr
+    #     ref: tags/v${{ steps.env.outputs.builder_version }}
+    #     path: bldr
+    #
+    # - name: "[1] bldr: apply patches"
+    #   id: bldr
+    #   run: |
+    #     cd "${{ steps.env.outputs.workspace }}/bldr"
+    #     patch -p1 < "${{ steps.env.outputs.workspace }}/patches/bldr.patch"
+    #     git add .
+    #     git commit -m patch
+    #     echo "tag=$(git describe --tag --always --dirty)" >> "${GITHUB_OUTPUT}"
+    #
+    # - name: "[1] bldr: build"
+    #   run: |
+    #     cd "${{ steps.env.outputs.workspace }}/bldr"
+    #     make \
+    #       REGISTRY="${{ steps.env.outputs.registry }}" \
+    #       PLATFORM=linux/amd64 \
+    #       PUSH=true \
+    #       image-bldr
+    #
+    # # [2] toolchain
+    # - name: "[2] toolchain: checkout"
+    #   uses: namespacelabs/nscloud-checkout-action@v2
+    #   with:
+    #     repository: siderolabs/toolchain
+    #     ref: tags/v${{ steps.env.outputs.toolchain_version }}
+    #     path: toolchain
+    #
+    # - name: "[2] toolchain: prepare"
+    #   id: toolchain
+    #   run: |
+    #     cd "${{ steps.env.outputs.workspace }}/toolchain"
+    #     patch -p1 < "${{ steps.env.outputs.workspace }}/patches/toolchain.patch"
+    #     sed --in-place \
+    #       --expression="s|ghcr.io|${{ steps.env.outputs.registry }}|g" \
+    #       --expression="s|bldr:.*|bldr:${{ steps.bldr.outputs.tag }}|g" \
+    #       Pkgfile
+    #     git add .
+    #     git commit -m patch
+    #     echo "tag=$(git describe --tag --always --dirty)" >> "${GITHUB_OUTPUT}"
+    #
+    # - name: "[2] toolchain: build"
+    #   run: |
+    #     cd "${{ steps.env.outputs.workspace }}/toolchain"
+    #     make \
+    #       REGISTRY="${{ steps.env.outputs.registry }}" \
+    #       BLDR_RELEASE="${{ steps.bldr.outputs.tag }}" \
+    #       BLDR_IMAGE="${{ steps.env.outputs.registry }}/siderolabs/bldr:${{ steps.bldr.outputs.tag }}" \
+    #       PLATFORM=linux/amd64 \
+    #       PUSH=true \
+    #       toolchain
+    #
+    # # [3] tools
+    # - name: "[3] tools: checkout"
+    #   uses: namespacelabs/nscloud-checkout-action@v2
+    #   with:
+    #     repository: siderolabs/tools
+    #     ref: tags/v${{ steps.env.outputs.talos_version }}
+    #     path: tools
+    #
+    # - name: "[3] tools: prepare"
+    #   id: tools
+    #   run: |
+    #     cd "${{ steps.env.outputs.workspace }}/tools"
+    #     sed --in-place \
+    #       --expression="s|ghcr.io|${{ steps.env.outputs.registry }}|g" \
+    #       --expression="s|bldr:.*|bldr:${{ steps.bldr.outputs.tag }}|g" \
+    #       --expression="s|toolchain:.*|toolchain:${{ steps.toolchain.outputs.tag }}|g" \
+    #       Pkgfile
+    #     git add .
+    #     git commit -m patch
+    #     echo "tag=$(git describe --tag --always --dirty)" >> "${GITHUB_OUTPUT}"
+    #
+    # - name: "[3] tools: build"
+    #   run: |
+    #     cd "${{ steps.env.outputs.workspace }}/tools"
+    #     make \
+    #       REGISTRY="${{ steps.env.outputs.registry }}" \
+    #       BLDR_RELEASE="${{ steps.bldr.outputs.tag }}" \
+    #       BLDR_IMAGE="${{ steps.env.outputs.registry }}/siderolabs/bldr:${{ steps.bldr.outputs.tag }}" \
+    #       PLATFORM=linux/amd64 \
+    #       PUSH=true \
+    #       tools
+    #
+    # # [4] pkgs
+    # - name: "[4] pkgs: checkout"
+    #   uses: namespacelabs/nscloud-checkout-action@v2
+    #   with:
+    #     repository: siderolabs/pkgs
+    #     ref: tags/v${{ steps.env.outputs.talos_version }}
+    #     path: pkgs
+    #
+    # - name: "[4] pkgs: prepare"
+    #   run: |
+    #     cd "${{ steps.env.outputs.workspace }}/pkgs"
+    #     sed --in-place \
+    #       --expression="s|ghcr.io|${{ steps.env.outputs.registry }}|g" \
+    #       --expression="s|bldr:.*|bldr:${{ steps.bldr.outputs.tag }}|g" \
+    #       --expression="s|tools:.*|toolchain:${{ steps.tools.outputs.tag }}|g" \
+    #       Pkgfile
+    #     git add .
+    #     git commit -m patch
+    #
+    # - name: "[4] pkgs: build" # debug: only openssl for now
+    #   run: |
+    #     cd "${{ steps.env.outputs.workspace }}/pkgs"
+    #     make \
+    #       REGISTRY="${{ steps.env.outputs.registry }}" \
+    #       BLDR_RELEASE="${{ steps.bldr.outputs.tag }}" \
+    #       BLDR_IMAGE="${{ steps.env.outputs.registry }}/siderolabs/bldr:${{ steps.bldr.outputs.tag }}" \
+    #       PLATFORM=linux/386 \
+    #       openssl
 
     # TODO:
     - name: DEBUG

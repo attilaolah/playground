@@ -1,5 +1,46 @@
+diff --git a/Dockerfile b/Dockerfile
+index 1b14131..402a019 100644
+--- a/Dockerfile
++++ b/Dockerfile
+@@ -150,6 +150,18 @@ ARG SHA
+ ARG TAG
+ RUN --mount=type=cache,target=/root/.cache/go-build --mount=type=cache,target=/go/pkg GOARCH=arm64 GOOS=darwin go build ${GO_BUILDFLAGS} -ldflags "${GO_LDFLAGS} -X ${VERSION_PKG}.Name=bldr -X ${VERSION_PKG}.SHA=${SHA} -X ${VERSION_PKG}.Tag=${TAG}" -o /bldr-darwin-arm64
+ 
++# builds bldr-linux-386
++FROM base AS bldr-linux-386-build
++COPY --from=generate / /
++COPY --from=embed-generate / /
++WORKDIR /src/cmd/bldr
++ARG GO_BUILDFLAGS
++ARG GO_LDFLAGS
++ARG VERSION_PKG="internal/version"
++ARG SHA
++ARG TAG
++RUN --mount=type=cache,target=/root/.cache/go-build --mount=type=cache,target=/go/pkg GOARCH=386 GOOS=linux go build ${GO_BUILDFLAGS} -ldflags "${GO_LDFLAGS} -X ${VERSION_PKG}.Name=bldr -X ${VERSION_PKG}.SHA=${SHA} -X ${VERSION_PKG}.Tag=${TAG}" -o /bldr-linux-386
++
+ # builds bldr-linux-amd64
+ FROM base AS bldr-linux-amd64-build
+ COPY --from=generate / /
+@@ -180,6 +192,9 @@ COPY --from=bldr-darwin-amd64-build /bldr-darwin-amd64 /bldr-darwin-amd64
+ FROM scratch AS bldr-darwin-arm64
+ COPY --from=bldr-darwin-arm64-build /bldr-darwin-arm64 /bldr-darwin-arm64
+ 
++FROM scratch AS bldr-linux-386
++COPY --from=bldr-linux-386-build /bldr-linux-386 /bldr-linux-386
++
+ FROM scratch AS bldr-linux-amd64
+ COPY --from=bldr-linux-amd64-build /bldr-linux-amd64 /bldr-linux-amd64
+ 
+@@ -191,6 +206,7 @@ FROM bldr-linux-${TARGETARCH} AS bldr
+ FROM scratch AS bldr-all
+ COPY --from=bldr-darwin-amd64 / /
+ COPY --from=bldr-darwin-arm64 / /
++COPY --from=bldr-linux-386 / /
+ COPY --from=bldr-linux-amd64 / /
+ COPY --from=bldr-linux-arm64 / /
+ 
 diff --git a/internal/pkg/environment/platform.go b/internal/pkg/environment/platform.go
-index 2721a7d..2ae0498 100644
+index 2721a7d..b921f30 100644
 --- a/internal/pkg/environment/platform.go
 +++ b/internal/pkg/environment/platform.go
 @@ -63,6 +63,15 @@ func (p *Platform) Type() string {
@@ -8,10 +49,10 @@ index 2721a7d..2ae0498 100644
  var (
 +	Linux386 = Platform{
 +		ID:           "linux/386",
-+		Arch:         "x86",
-+		Target:       "x86-talos-linux-musl",
-+		Build:        "x86-linux-musl",
-+		Host:         "x86-linux-musl",
++		Arch:         "i386",
++		Target:       "i386-talos-linux-musl",
++		Build:        "i386-linux-musl",
++		Host:         "i386-linux-musl",
 +		LLBPlatform:  llb.Platform(specs.Platform{OS: "linux", Architecture: "386"}),
 +		PlatformSpec: platforms.MustParse("linux/386"),
 +	}
