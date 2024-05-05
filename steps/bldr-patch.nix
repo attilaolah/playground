@@ -3,7 +3,7 @@ with pkgs.lib; let
   git = getExe pkgs.git;
   head = getExe' pkgs.coreutils "head";
   sed = getExe' pkgs.gnused "sed";
-in (pkgs.writeShellScriptBin "bldr-patch-target" ''
+in (pkgs.writeShellScriptBin "bldr-patch" ''
   set -euxo pipefail
   cd "$GITHUB_WORKSPACE/bldr"
 

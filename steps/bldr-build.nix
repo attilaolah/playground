@@ -1,7 +1,7 @@
 {pkgs, ...}:
 with pkgs.lib; let
   make = getExe' pkgs.gnumake "make";
-in (pkgs.writeShellScriptBin "bldr-build-target" ''
+in (pkgs.writeShellScriptBin "bldr-build" ''
   set -euxo pipefail
   cd "$GITHUB_WORKSPACE/bldr"
 
