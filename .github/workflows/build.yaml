@@ -31,9 +31,7 @@ jobs:
 
     - name: 0. prepare build env
       id: env
-      run: nix run .#prepare
-      env:
-        OUT: "${GITHUB_OUTPUT}"
+      run: nix run .#prepare -- "$GITHUB_OUTPUT"
 
     # Stage 1: bldr patch
     - name: "[1] bldr: checkout"

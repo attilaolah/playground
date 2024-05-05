@@ -16,8 +16,8 @@ in (pkgs.writeShellScriptBin "prepare" ''
 
   # Export version numbers as output.
   # Allows subsequent steps to use it as input values.
-  ${echo} "v_bldr=${v.bldr}" >> "$OUT"
-  ${echo} "v_pkgs=${v.pkgs}" >> "$OUT"
-  ${echo} "v_toolchain=${v.toolchain}" >> "$OUT"
-  ${echo} "v_tools=${v.tools}" >> "$OUT"
+  ${echo} "v_bldr=${v.bldr}" >> "$1"
+  ${echo} "v_pkgs=${v.pkgs}" >> "$1"
+  ${echo} "v_toolchain=${v.toolchain}" >> "$1"
+  ${echo} "v_tools=${v.tools}" >> "$1"
 '')
