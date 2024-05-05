@@ -6,10 +6,6 @@ on:
     - main
   workflow_dispatch:
 
-defaults:
-  run:
-    working-directory: ./steps
-
 jobs:
   build:
     runs-on:
