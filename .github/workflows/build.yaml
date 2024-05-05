@@ -78,6 +78,12 @@ jobs:
     - name: Build bldr for target
       run: nix run .#bldr-build-target
 
+    - name: Apply toolchain patches
+      run: nix run .#toolchain-patch
+
+    - name: Build toolchain
+      run: nix run .#toolchain-build
+
     # - name: "[2] toolchain: prepare"
     #   id: toolchain
     #   run: |
