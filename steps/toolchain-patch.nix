@@ -12,6 +12,7 @@ in (pkgs.writeShellScriptBin "toolchain-patch" ''
     )|g" \
     Pkgfile
   ${sed} --in-place \
+    --regexp-extended \
     --expression='s|^(\s*)(case .ARCH in)|\1\2\n\1    i386)\n\1        arch="i386"\n\1    ;;|' \
     linux-headers/pkg.yaml
 
