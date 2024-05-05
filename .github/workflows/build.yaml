@@ -14,50 +14,64 @@ jobs:
     - nscloud-git-mirror-5gb
     steps:
 
-    # Stage 0: init
-    - name: 0. checkout
+    - name: Checkout
       uses: namespacelabs/nscloud-checkout-action@v2
 
-    - name: 0. install nix
+    - name: Install Nix
       uses: cachix/install-nix-action@v25
       with:
         github_access_token: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: 0. build flake
+    - name: Build Nix flake
       run: nix build
 
-    - name: 0. check flake
+    - name: Check Nix flake
       run: nix flake check --all-systems
 
-    - name: 0. prepare build env
+    - name: Prepare the build environment
       id: env
       run: nix run .#prepare -- "$GITHUB_OUTPUT"
 
-    # Stage 1: bldr patch
-    - name: "[1] bldr: checkout"
+    - name: Checkout bldr
       uses: namespacelabs/nscloud-checkout-action@v2
       with:
         repository: siderolabs/bldr
         ref: tags/v${{ steps.env.outputs.v_bldr }}
         path: bldr
 
-    - name: "[1] bldr: apply patches"
-      id: bldr
-      run: nix run .#bldr-patch
-      env:
-        OUT: "${GITHUB_OUTPUT}"
+    - name: Checkout pkgs
+      uses: namespacelabs/nscloud-checkout-action@v2
+      with:
+        repository: siderolabs/pkgs
+        ref: tags/v${{ steps.env.outputs.v_pkgs }}
+        path: pkgs
 
-    - name: "[1] bldr: build"
-      run: nix run .#bldr-build
-    #
-    # # [2] toolchain
-    # - name: "[2] toolchain: checkout"
-    #   uses: namespacelabs/nscloud-checkout-action@v2
-    #   with:
-    #     repository: siderolabs/toolchain
-    #     ref: tags/v${{ steps.env.outputs.toolchain_version }}
-    #     path: toolchain
-    #
+    - name: Checkout toolchain
+      uses: namespacelabs/nscloud-checkout-action@v2
+      with:
+        repository: siderolabs/toolchain
+        ref: tags/v${{ steps.env.outputs.v_toolchain }}
+        path: toolchain
+
+    - name: Checkout tools
+      uses: namespacelabs/nscloud-checkout-action@v2
+      with:
+        repository: siderolabs/tools
+        ref: tags/v${{ steps.env.outputs.v_tools }}
+        path: tools
+
+    - name: Apply bldr patches for host
+      run: nix run .#bldr-patch-host
+
+    - name: Build bldr for host
+      run: nix run .#bldr-build-host
+
+    - name: Apply pkgs patches for host
+      run: nix run .#pkgs-patch-host
+
+    - name: Build ca-certificates and fhs for host
+      run: nix run .#pkgs-build-host
+
     # - name: "[2] toolchain: prepare"
     #   id: toolchain
     #   run: |
