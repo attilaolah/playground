@@ -72,11 +72,11 @@ jobs:
     - name: Build ca-certificates and fhs for host
       run: nix run .#pkgs-build-host
 
-    - name: Apply bldr patches for target
-      run: nix run .#bldr-patch-target
+    - name: Apply bldr patches
+      run: nix run .#bldr-patch
 
-    - name: Build bldr for target
-      run: nix run .#bldr-build-target
+    - name: Build bldr
+      run: nix run .#bldr-build
 
     - name: Apply toolchain patches
       run: nix run .#toolchain-patch
