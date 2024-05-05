@@ -30,7 +30,10 @@ jobs:
       run: nix flake check --all-systems
 
     - name: 0. prepare build env
+      id: env
       run: nix run .#prepare
+      env:
+        OUT: "${GITHUB_OUTPUT}"
 
     # Stage 1: bldr patch
     - name: "[1] bldr: checkout"
@@ -43,6 +46,8 @@ jobs:
     - name: "[1] bldr: apply patches"
       id: bldr
       run: nix run .#bldr-patch
+      env:
+        OUT: "${GITHUB_OUTPUT}"
 
     - name: "[1] bldr: build"
       run: nix run .#bldr-build

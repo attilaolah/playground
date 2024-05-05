@@ -1,9 +1,7 @@
 {pkgs, ...}:
 with pkgs.lib; let
-  echo = getExe' pkgs.coreutils "echo";
-  git = getExe pkgs.git;
   make = getExe' pkgs.gnumake "make";
-in (pkgs.writeShellScriptBin "bldr-patch" ''
+in (pkgs.writeShellScriptBin "bldr-build" ''
   set -euxo pipefail
   cd "$GITHUB_WORKSPACE/bldr"
 
@@ -12,6 +10,4 @@ in (pkgs.writeShellScriptBin "bldr-patch" ''
     PLATFORM=linux/amd64 \
     PUSH=true \
     image-bldr
-
-  ${echo} "tag=$(${git} describe --tag --always --dirty)" >> "$GITHUB_OUTPUT"
 '')

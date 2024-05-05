@@ -11,5 +11,5 @@ in (pkgs.writeShellScriptBin "bldr-patch" ''
   ${git} add .
   ${git} commit --message "feat: add linux/i386 support"
 
-  ${echo} "tag=$(${git} describe --tag --always --dirty)" >> "$GITHUB_OUTPUT"
+  ${echo} "tag=$(${git} describe --tag --always --dirty)" >> "$OUT"
 '')
