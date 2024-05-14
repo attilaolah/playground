@@ -33,11 +33,30 @@
                     inherit value;
                   }
                 ) [
+                  (containerd.overrideAttrs {
+                    BUILDTAGS = "seccomp no_aufs no_btrfs no_devmapper no_zfs";
+                    buildPhase =
+                      builtins.replaceStrings ["binaries"] [
+                        (builtins.concatStringsSep " " ([
+                            "bin/containerd"
+                            "bin/containerd-shim"
+                            "bin/containerd-shim-runc-v2"
+                          ]
+                          ++ lib.lists.optionals (which == "i686") [
+                            "SHIM_CGO_ENABLED=1"
+                          ]))
+                      ]
+                      containerd.buildPhase;
+                  })
                   cryptsetup
                   dosfstools
+                  eudev
+                  grub2
                   inih
                   iptables
+                  ipxe
                   json_c
+                  kmod
                   libaio
                   libseccomp
                   liburcu
@@ -47,6 +66,8 @@
                   openssl
                   popt
                   runc
+                  util-linux
+                  xfsprogs
                 ]);
           archlist = ["i686" "x86_64"];
         in {
