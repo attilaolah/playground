@@ -16,9 +16,7 @@
     ...
   }:
     with flake-utils.lib;
-      eachSystem [
-        system.x86_64-linux
-      ] (
+      eachSystem [system.x86_64-linux] (
         system: let
           pkgs = arch: (import nixpkgs {
             inherit system;
@@ -27,7 +25,7 @@
               isStatic = true;
             };
           });
-          pkglist = which:
+          build = which:
             with pkgs which;
               builtins.listToAttrs (map (
                   {pname, ...} @ value: {
@@ -54,7 +52,7 @@
         in {
           packages = builtins.listToAttrs (map (name: {
               inherit name;
-              value = pkglist name;
+              value = build name;
             })
             archlist);
         }
