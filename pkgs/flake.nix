@@ -27,11 +27,36 @@
               isStatic = true;
             };
           });
+          pkglist = which:
+            with pkgs which;
+              builtins.listToAttrs (map (
+                  {pname, ...} @ value: {
+                    name = pname;
+                    inherit value;
+                  }
+                ) [
+                  cryptsetup
+                  dosfstools
+                  inih
+                  iptables
+                  json_c
+                  libaio
+                  libseccomp
+                  liburcu
+                  linux-firmware
+                  lvm2
+                  musl
+                  openssl
+                  popt
+                  runc
+                ]);
+          archlist = ["i686" "x86_64"];
         in {
-          packages = {
-            i686 = with pkgs "i686"; {inherit cryptsetup;};
-            x86_64 = with pkgs "x86_64"; {inherit cryptsetup;};
-          };
+          packages = builtins.listToAttrs (map (name: {
+              inherit name;
+              value = pkglist name;
+            })
+            archlist);
         }
       );
 }
