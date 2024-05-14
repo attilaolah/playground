@@ -50,6 +50,7 @@
                 ]);
           archlist = ["i686" "x86_64"];
         in {
+          # Build each package via its attr name, e.g. .#i686.linux-firmware.
           packages = builtins.listToAttrs (map (name: {
               inherit name;
               value = build name;
