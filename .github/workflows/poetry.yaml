@@ -10,6 +10,7 @@ jobs:
   debug:
     runs-on:
     - nscloud-ubuntu-22.04-amd64-2x4-with-cache
+    - nscloud-cache-tag-poetry  # arbitrary tag
     - nscloud-cache-size-20gb
     - nscloud-git-mirror-5gb
 
@@ -17,12 +18,19 @@ jobs:
     - name: Checkout
       uses: namespacelabs/nscloud-checkout-action@v2
 
+    - name: Setup Poetry cache
+      uses: namespacelabs/nscloud-cache-action@v1
+      with:
+        path: |
+          ~/.poetry
+
     - name: Install Poetry
       uses: snok/install-poetry@v1
       with:
         virtualenvs-create: true
         virtualenvs-in-project: true
         installer-parallel: true
+        cache-dir: ~/.poetry
 
     - name: Install dependencies
       run: |
