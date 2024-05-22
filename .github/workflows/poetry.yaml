@@ -38,7 +38,7 @@ jobs:
 
     - name: Install dependencies
       run: |
-        poetry install --no-interaction
+        poetry install --no-interaction --no-root
       env:
         SETUPTOOLS_USE_DISTUTILSL: stdlib
         PYTHONDONTWRITEBYTECODE: 1
