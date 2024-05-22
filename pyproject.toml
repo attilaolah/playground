@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "playground"
+version = "0.1.0"
+description = "Demo Python project using Poetry."
+authors = ["Attila Oláh <attilaolah@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+research = "^0.2.0"
+catboost = "^1.2.5"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
