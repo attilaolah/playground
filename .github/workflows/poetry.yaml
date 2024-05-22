@@ -7,20 +7,23 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  debug:
     runs-on:
     - nscloud-ubuntu-22.04-amd64-2x4-with-cache
     - nscloud-cache-size-20gb
     - nscloud-git-mirror-5gb
 
     steps:
+    - name: Checkout
+      uses: namespacelabs/nscloud-checkout-action@v2
+
     - name: Install dependencies
       run: |
+        mkdir src
         poetry install --no-interaction -E research -E catboost
       env:
         SETUPTOOLS_USE_DISTUTILSL: stdlib
         PYTHONDONTWRITEBYTECODE: 1
-      working-directory: src
 
     # TODO:
     - name: DEBUG
