@@ -22,7 +22,8 @@ jobs:
       uses: namespacelabs/nscloud-cache-action@v1
       with:
         path: |  # this is where poetry installs itself on linux
-          ~/.local
+          $XDG_CACHE_HOME/pypoetry
+          $HOME/.local
 
     - name: Determine Poetry version in the cache
       id: poetry
