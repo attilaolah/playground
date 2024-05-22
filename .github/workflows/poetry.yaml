@@ -21,9 +21,9 @@ jobs:
     - name: Setup Poetry cache
       uses: namespacelabs/nscloud-cache-action@v1
       with:
-        path: |  # this is where poetry installs itself on linux
-          $XDG_CACHE_HOME/pypoetry
-          $HOME/.local
+        path: | # Poetry cache + install dir
+          ~/.cache/pypoetry
+          ~/.local
 
     - name: Determine Poetry version in the cache
       id: poetry
@@ -35,7 +35,6 @@ jobs:
       with:
         installer-parallel: true
         virtualenvs-create: true
-        virtualenvs-in-project: true
 
     - name: Install dependencies
       run: |
