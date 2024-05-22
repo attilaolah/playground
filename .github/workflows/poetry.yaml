@@ -11,18 +11,18 @@ jobs:
     - nscloud-git-mirror-5gb
 
     steps:
-      - id: poetry-cache-ci
-        uses: actions/cache@v4
-        with:
-          path: src/.venv
-          key: ${{ runner.os }}-poetry-cache-ci-${{ secrets.CACHE_VERSION }}-${{ hashFiles('**/poetry.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-poetry-cache-ci-${{ secrets.CACHE_VERSION }}-${{ hashFiles('**/poetry.lock') }}
-      - name: Install dependencies
-        if: steps.poetry-cache-ci.outputs.cache-hit != 'true'
-        run: |
-          poetry install --no-interaction -E research -E catboost
-        env:
-          SETUPTOOLS_USE_DISTUTILSL: stdlib
-          PYTHONDONTWRITEBYTECODE: 1
-        working-directory: src
+    - name: Install dependencies
+      run: |
+        poetry install --no-interaction -E research -E catboost
+      env:
+        SETUPTOOLS_USE_DISTUTILSL: stdlib
+        PYTHONDONTWRITEBYTECODE: 1
+      working-directory: src
+
+    # TODO:
+    - name: DEBUG
+      uses: namespacelabs/breakpoint-action@v0
+      if: failure()
+      with:
+        duration: 5m
+        authorized-users: attilaolah
