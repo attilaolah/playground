@@ -24,8 +24,13 @@ jobs:
         path: |  # this is where poetry installs itself on linux
           ~/.local
 
+    - name: Determine Poetry version in the cache
+      id: poetry
+      run: echo "version=$(cat ~/.local/VERSION)" >> "$GITHUB_OUTPUT"
+
     - name: Install Poetry
       uses: snok/install-poetry@v1
+      if: steps.poetry.outputs.version != "1.8.3"
       with:
         installer-parallel: true
         virtualenvs-create: true
