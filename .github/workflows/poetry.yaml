@@ -22,9 +22,7 @@ jobs:
       uses: namespacelabs/nscloud-cache-action@v1
       with:
         path: |
-          ~/.local/bin
-          ~/.local/venv
-          ~/.local/VERSION
+          ~/.local
 
     - name: Install Poetry
       uses: snok/install-poetry@v1
