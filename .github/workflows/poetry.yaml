@@ -21,7 +21,7 @@ jobs:
     - name: Setup Poetry cache
       uses: namespacelabs/nscloud-cache-action@v1
       with:
-        path: |
+        path: |  # this is where poetry installs itself on linux
           ~/.local
 
     - name: Install Poetry
