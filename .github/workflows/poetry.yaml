@@ -8,7 +8,7 @@ on:
 
 jobs:
   debug:
-    runs-on: namespace-profile-poetry-demo-6
+    runs-on: namespace-profile-attila-test-1
 
     steps:
     - name: Checkout
@@ -20,16 +20,6 @@ jobs:
         path: | # Poetry cache + install dir
           ~/.cache/pypoetry
           ~/.local
-
-    - name: Check Poetry version
-      run: poetry --version
-
-    - name: Install dependencies
-      run: |
-        poetry install --no-interaction --no-root
-      env:
-        SETUPTOOLS_USE_DISTUTILSL: stdlib
-        PYTHONDONTWRITEBYTECODE: 1
 
     # TODO:
     - name: DEBUG
