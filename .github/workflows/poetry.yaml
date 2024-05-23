@@ -8,7 +8,7 @@ on:
 
 jobs:
   debug:
-    runs-on: namespace-profile-poetry-demo-4
+    runs-on: namespace-profile-poetry-demo-6
 
     steps:
     - name: Checkout
