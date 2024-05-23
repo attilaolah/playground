@@ -8,11 +8,7 @@ on:
 
 jobs:
   debug:
-    runs-on:
-    - nscloud-ubuntu-22.04-amd64-2x4-with-cache
-    - nscloud-cache-tag-poetry  # arbitrary tag
-    - nscloud-cache-size-20gb
-    - nscloud-git-mirror-5gb
+    runs-on: namespace-profile-poetry-demo-1
 
     steps:
     - name: Checkout
@@ -25,16 +21,8 @@ jobs:
           ~/.cache/pypoetry
           ~/.local
 
-    - name: Determine Poetry version in the cache
-      id: poetry
-      run: echo "version=$(cat ~/.local/VERSION || echo 0)" >> "$GITHUB_OUTPUT"
-
-    - name: Install Poetry
-      uses: snok/install-poetry@v1
-      if: steps.poetry.outputs.version != '1.8.3'
-      with:
-        installer-parallel: true
-        virtualenvs-create: true
+    - name: Check Poetry version
+      run: poetry --version
 
     - name: Install dependencies
       run: |
