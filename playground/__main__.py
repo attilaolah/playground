@@ -2,7 +2,7 @@
 
 import logging
 
-from . import markov_unigram
+from . import markov
 from .config import Settings
 
 
@@ -11,7 +11,7 @@ def main() -> None:
     logging.basicConfig(level=logging.DEBUG)
     settings = Settings()
 
-    markov_unigram.print_stats(settings)
+    markov.print_stats(settings)
 
 
 if __name__ == "__main__":

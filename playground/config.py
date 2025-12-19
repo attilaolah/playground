@@ -11,6 +11,8 @@ DATA_DIR: DirectoryPath = Path(__file__).parent.parent / "data"
 
 @final
 class _Data(BaseModel):
+    cutoff: int | None = None
+
     enwik_8: FilePath = DATA_DIR / "enwik8"
 
 
