@@ -10,9 +10,7 @@ DATA_DIR: DirectoryPath = Path(__file__).parent.parent / "data"
 
 
 @final
-class DataSettings(BaseModel):
-    """Data file settings."""
-
+class _Data(BaseModel):
     enwik_8: FilePath = DATA_DIR / "enwik8"
 
 
@@ -22,4 +20,4 @@ class Settings(BaseSettings):
 
     model_config = SettingsConfigDict(cli_parse_args=True)
 
-    data: DataSettings = DataSettings()
+    data: _Data = _Data()
