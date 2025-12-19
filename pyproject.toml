@@ -5,3 +5,42 @@ description = "Attila's playground"
 readme = "README.md"
 requires-python = ">=3.14"
 dependencies = []
+
+[dependency-groups]
+dev = [
+  "ipdb",
+  "ipython",
+  "pytest",
+  "pytest-asyncio",
+  "pytest-cov",
+]
+
+# Using Flit core build backend, as described here:
+# https://flit.pypa.io/en/stable/pyproject_toml.html#build-system-section
+[build-system]
+requires = ["flit_core >=3.11,<4"]
+# https://packaging.python.org/en/latest/guides/tool-recommendations/#build-backends
+build-backend = "flit_core.buildapi"
+
+[tool.black]
+line-length = 120
+
+[tool.ruff.lint]
+preview = true
+select = ["ALL"]
+ignore = [
+  "D203",  # incompatible with D211
+  "D212",  # incompatible with D213
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = ["S101"]  # asserts allowed in tests
+
+[tool.ruff.lint.pycodestyle]
+max-line-length = 120
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.pyright]
+strict = ["."]
