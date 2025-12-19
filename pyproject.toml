@@ -29,6 +29,7 @@ line-length = 120
 preview = true
 select = ["ALL"]
 ignore = [
+  "CPY001",  # LICENSE files in repo root
   "D203",  # incompatible with D211
   "D212",  # incompatible with D213
 ]
