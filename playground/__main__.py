@@ -1,19 +1,17 @@
 """Main application entry point."""
 
+import logging
+
+from . import markov_unigram
 from .config import Settings
-from .errors import DataFileNotFoundError
 
 
 def main() -> None:
-    """Main module entry point.
-
-    Raises:
-        DataFileNotFoundError: If a data file was not found.
-    """
+    """Main module entry point."""
+    logging.basicConfig(level=logging.DEBUG)
     settings = Settings()
 
-    if not settings.data.enwik_8.exists():
-        raise DataFileNotFoundError(settings.data.enwik_8)
+    markov_unigram.print_stats(settings)
 
 
 if __name__ == "__main__":

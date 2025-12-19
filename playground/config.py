@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import final
 
 from pydantic import BaseModel, DirectoryPath, FilePath
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 DATA_DIR: DirectoryPath = Path(__file__).parent.parent / "data"
 
@@ -19,5 +19,7 @@ class DataSettings(BaseModel):
 @final
 class Settings(BaseSettings):
     """Main application settings."""
+
+    model_config = SettingsConfigDict(cli_parse_args=True)
 
     data: DataSettings = DataSettings()
