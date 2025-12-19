@@ -1,5 +1,5 @@
 {
-  description = "Playground.";
+  description = "Attila's Playground";
 
   inputs = {
     nixpkgs.url = "nixpkgs/nixos-unstable";
