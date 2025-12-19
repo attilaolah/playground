@@ -14,16 +14,10 @@ in {
   git-hooks.hooks = mapAttrs (name: value: value // {enable = true;}) {
     alejandra = {};
     black = {};
+    isort = {};
     pyupgrade = {};
     shellcheck = {};
     typos = {};
-
-    isort = let
-      package = pkgs.usort;
-    in {
-      inherit package;
-      entry = "${lib.getExe package} check";
-    };
 
     # Others
     prettier = {
