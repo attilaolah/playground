@@ -17,3 +17,7 @@ devenv.local.yaml
 
 # pre-commit
 .pre-commit-config.yaml
+
+# data files
+/data/enwik[89]
+/data/enwik[89].zip
