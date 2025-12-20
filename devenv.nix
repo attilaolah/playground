@@ -10,6 +10,17 @@ in {
     ruff
   ];
 
+  # https://devenv.sh/supported-languages/python/
+  languages.python = {
+    enable = true;
+    package = pkgs.python314;
+    uv = {
+      enable = true;
+      package = pkgs.uv;
+      sync.enable = true;
+    };
+  };
+
   # https://devenv.sh/git-hooks/
   git-hooks.hooks = mapAttrs (name: value: value // {enable = true;}) {
     alejandra = {};
