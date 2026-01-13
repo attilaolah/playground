@@ -7,7 +7,7 @@ from .config import Settings
 
 
 def main() -> None:
-    """Main module entry point."""
+    """Run the module from the command line."""
     logging.basicConfig(level=logging.DEBUG)
     settings = Settings()
 
